@@ -1,0 +1,93 @@
+.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: background-color 0.25s ease, border-color 0.25s ease, backdrop-filter 0.25s ease;
+}
+.topnav.is-scrolled {
+    background: rgba(8, 17, 28, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+
+.topnav__inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.topnav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--text);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    margin-right: auto;
+}
+.topnav__logo {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-strong), var(--primary-deep));
+    color: #04121a;
+    box-shadow: 0 0 16px rgba(18, 211, 224, 0.35);
+}
+.topnav__name { white-space: nowrap; }
+
+.topnav__links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.topnav__link {
+    background: transparent;
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+.topnav__link:hover { color: var(--text); background: rgba(18, 211, 224, 0.08); }
+
+.topnav__cta { display: flex; align-items: center; }
+
+.topnav__burger {
+    display: none;
+    background: transparent;
+    color: var(--text);
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.topnav__mobile { overflow: hidden; display: none; }
+.topnav__mobile-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 24px 18px;
+    background: rgba(8, 17, 28, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+.topnav__mobile-inner .topnav__link { text-align: left; font-size: 15px; padding: 12px 14px; }
+
+@media (max-width: 768px) {
+    .topnav__links, .topnav__cta { display: none; }
+    .topnav__burger { display: inline-flex; }
+    .topnav__mobile { display: block; }
+    .topnav__name { font-size: 14px; }
+}

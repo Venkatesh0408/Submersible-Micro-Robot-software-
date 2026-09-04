@@ -1,0 +1,114 @@
+.about-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(3, 8, 14, 0.66);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow-y: auto;
+}
+.about-modal {
+    position: relative;
+    width: min(96vw, 720px);
+    max-height: min(90vh, 860px);
+    overflow-y: auto;
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    padding: 34px;
+}
+.about-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.about-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--text); }
+
+.about-body { display: flex; flex-direction: column; gap: 26px; }
+.about-kicker {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+.about-head h2 { font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+.about-lede { color: var(--text-dim); font-size: 15px; line-height: 1.65; max-width: 60ch; }
+
+.about-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.about-tile {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(18, 211, 224, 0.05);
+    border: 1px solid var(--border);
+}
+.about-tile__icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: rgba(18, 211, 224, 0.12);
+    color: var(--primary);
+}
+.about-tile h4 { font-size: 14.5px; color: #fff; margin-bottom: 4px; }
+.about-tile p { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+
+.about-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 14px;
+}
+.about-team { display: flex; flex-direction: column; gap: 8px; }
+.about-team__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+}
+.about-team__name { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 600; font-size: 14.5px; }
+.about-team__usn { color: var(--primary); font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.5px; }
+.about-chip {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: rgba(18, 211, 224, 0.12);
+    border: 1px solid var(--border);
+    padding: 3px 7px;
+    border-radius: 6px;
+}
+.about-guide__name { color: #fff; font-weight: 700; font-size: 16px; }
+.about-guide__name span { color: var(--text-dim); font-weight: 500; }
+.about-guide__dept { color: var(--text-dim); font-size: 13.5px; margin-top: 4px; }
+.about-guide__meta { color: var(--text-dim); font-size: 12px; margin-top: 2px; opacity: 0.8; }
+
+@media (max-width: 560px) {
+    .about-modal { padding: 24px; }
+    .about-grid { grid-template-columns: 1fr; }
+    .about-head h2 { font-size: 25px; }
+}

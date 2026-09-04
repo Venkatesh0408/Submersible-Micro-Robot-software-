@@ -1,0 +1,164 @@
+.sensor-card{
+
+background:#0e1524;
+
+border-radius:18px;
+
+padding:20px;
+
+box-shadow:0 0 25px rgba(18,211,224,.2);
+
+border:1px solid rgba(18,211,224,.3);
+
+transition:.3s;
+
+cursor:pointer;
+
+height:140px;
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:space-between;
+
+}
+
+.sensor-card:hover{
+
+transform:translateY(-5px);
+
+box-shadow:0 0 30px rgba(18,211,224,.4);
+
+}
+
+.sensor-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+.sensor-title{
+
+font-size:17px;
+
+font-weight:600;
+
+color:#22d3ee;
+
+}
+
+.sensor-indicator{
+
+width:14px;
+
+height:14px;
+
+border-radius:50%;
+
+box-shadow:0 0 10px currentColor;
+
+}
+
+.sensor-value{
+
+font-size:34px;
+
+font-weight:bold;
+
+color:#22d3ee;
+
+margin-top:8px;
+
+font-family:var(--font-mono);
+
+font-variant-numeric:tabular-nums;
+
+letter-spacing:-0.5px;
+
+}
+
+.sensor-unit{
+
+font-size:18px;
+
+color:#93a1bc;
+
+margin-left:6px;
+
+}
+
+.sensor-footer{
+
+margin-top:12px;
+
+height:8px;
+
+background:#16203a;
+
+border-radius:20px;
+
+overflow:hidden;
+
+}
+
+.sensor-progress{
+
+height:100%;
+
+background:linear-gradient(90deg,#22d3ee,#7fe9f0);
+
+border-radius:20px;
+
+animation:progress 2s infinite alternate;
+
+}
+
+@keyframes progress{
+
+0%{
+
+width:40%;
+
+}
+
+100%{
+
+width:90%;
+
+}
+
+}
+
+/* Loading skeleton — same footprint as a real card so the grid doesn't jump */
+.sensor-card--skeleton{
+    cursor:default;
+    background:linear-gradient(100deg,var(--surface) 30%,rgba(18,211,224,.08) 50%,var(--surface) 70%);
+    background-size:200% 100%;
+    animation:sensor-shimmer 1.2s ease-in-out infinite;
+    box-shadow:none;
+}
+
+@keyframes sensor-shimmer{
+    0%{ background-position:200% 0; }
+    100%{ background-position:-200% 0; }
+}
+
+/* Clean empty state when there's no sensor data */
+.sensor-empty{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:var(--space-4);
+    padding:28px;
+    border-radius:20px;
+    background:var(--surface);
+    border:1px dashed rgba(18,211,224,.3);
+    color:var(--text-muted);
+    font-size:15px;
+}

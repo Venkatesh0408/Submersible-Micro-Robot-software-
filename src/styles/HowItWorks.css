@@ -1,0 +1,93 @@
+.hiw-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(3, 8, 14, 0.66);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow-y: auto;
+}
+.hiw-modal {
+    position: relative;
+    width: min(96vw, 680px);
+    max-height: min(90vh, 820px);
+    overflow-y: auto;
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    padding: 34px;
+}
+.hiw-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.hiw-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--text); }
+
+.hiw-title { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+.hiw-lede { color: var(--text-dim); font-size: 14.5px; line-height: 1.65; max-width: 62ch; margin-bottom: 22px; }
+
+.hiw-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+.hiw-tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.hiw-tab:hover { color: var(--text); }
+.hiw-tab.is-active {
+    background: linear-gradient(135deg, var(--primary-strong), var(--primary-deep));
+    color: #04121a;
+}
+
+.hiw-steps { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.hiw-step { display: flex; gap: 14px; align-items: flex-start; }
+.hiw-num {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+}
+.hiw-text { color: var(--text); font-size: 14.5px; line-height: 1.6; padding-top: 3px; }
+
+@media (max-width: 560px) {
+    .hiw-modal { padding: 24px; }
+    .hiw-title { font-size: 24px; }
+    .hiw-tab { font-size: 12px; padding: 9px 8px; }
+}

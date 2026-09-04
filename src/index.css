@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS — centralize the colors/spacing/type already in
+   use so they stay consistent. Values are the app's existing
+   ones (no visual change), just named.
+   ============================================================ */
+:root{
+    /* surfaces & text */
+    --bg:#070b14;
+    --surface:#0e1524;
+    --surface-2:#16203a;
+    --text:#e8edf6;
+    --text-muted:#93a1bc;
+
+    /* brand accents */
+    --accent:#22d3ee;
+    --accent-strong:#2ee6f0;
+    --accent-deep:#0a6b78;
+
+    /* semantic aliases (spec naming) */
+    --primary:#22d3ee;
+    --primary-strong:#2ee6f0;
+    --primary-deep:#0a6b78;
+    --border:#1e2a44;
+    --text-dim:#93a1bc;
+
+    /* status */
+    --ok:#22c55e;
+    --warning:#ffb703;
+    --error:#ff4d6d;
+    --success:#22c55e;
+    --danger:#ff4d6d;
+    --info:#38bdf8;
+
+    /* fonts */
+    --font-sans:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --font-display:'Orbitron', var(--font-sans);
+
+    /* spacing scale */
+    --space-1:4px;
+    --space-2:8px;
+    --space-3:12px;
+    --space-4:16px;
+    --space-6:24px;
+    --space-8:32px;
+    --space-12:48px;
+
+    /* radius scale */
+    --radius-sm:8px;
+    --radius-md:12px;
+    --radius-lg:20px;
+    --radius-xl:24px;
+
+    /* elevation */
+    --shadow-1:0 4px 12px rgba(0,0,0,.3);
+    --shadow-2:0 8px 32px rgba(0,0,0,.5);
+
+    /* type scale */
+    --text-xs:12px;
+    --text-sm:14px;
+    --text-base:16px;
+    --text-lg:18px;
+    --text-xl:24px;
+    --text-2xl:32px;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,
+body,
+#root{
+    width:100%;
+    min-height:100vh;
+}
+
+body{
+    font-family:var(--font-sans);
+    background:var(--bg);
+    color:var(--text);
+    overflow-x:clip;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+}
+
+#root{
+    width:100%;
+}
+
+#username-input {
+    padding-left: 3.25rem !important;
+    padding-right: 1rem !important;
+}
+
+#password-input {
+    padding-left: 3.25rem !important;
+    padding-right: 3.25rem !important;
+}
+
+@keyframes levitate {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+.animate-levitate {
+    animation: levitate 2.5s ease-in-out infinite;
+}
+
+/* Respect the user's reduced-motion preference: neutralize the app's many
+   infinite pulse/scan/levitate loops and long transitions for AT users. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
