@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, GraduationCap, Compass, Radar, ScanSearch, FileText, Rocket, Info, BookOpen } from "lucide-react";
+import { Users, GraduationCap, Compass, Radar, ScanSearch, FileText, Rocket, Info, BookOpen, Box } from "lucide-react";
 import { PROJECT, INSTITUTION, GUIDE, TEAM } from "../data/project";
 import TopNav from "../components/TopNav";
 import AboutModal from "../components/AboutModal";
@@ -106,6 +106,9 @@ export default function Main() {
                             <Button variant="secondary" size="lg" iconLeft={<Info size={18} />} onClick={() => setAboutOpen(true)}>
                                 About the Project
                             </Button>
+                            <Button as="a" href="/model" target="_blank" rel="noopener noreferrer" variant="secondary" size="lg" iconLeft={<Box size={18} />}>
+                                View 3D Model
+                            </Button>
                         </div>
                         <span className="home-hint">or press <kbd>Enter</kbd></span>
                     </motion.div>
@@ -137,6 +140,7 @@ export default function Main() {
                     </Button>
                 </div>
             </motion.section>
+
 
             {/* ---------------- TEAM ---------------- */}
             <motion.section

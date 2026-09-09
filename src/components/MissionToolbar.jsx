@@ -138,12 +138,12 @@ export default function MissionToolbar() {
             </div>
 
             {mode === "auto" ? (
-                <div className="toolbar-buttons" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px' }}>
+                <div className="toolbar-buttons">
                     <button className="save-btn" onClick={saveHandler}>💾 SAVE</button>
                     <button className={missionStarted ? "stop-btn" : "start-btn"} onClick={missionStarted ? stopHandler : startHandler}>{missionStarted ? "⏹ STOP" : "▶ START"}</button>
                     <button className="pause-btn" onClick={pauseHandler} disabled={!missionStarted} style={{ opacity: missionStarted ? 1 : 0.5 }}>{missionPaused ? "▶ RESUME" : "⏸ PAUSE"}</button>
                     <button className="home-btn" onClick={homeHandler}>🏠 RETURN</button>
-                    <button className="capture-btn" style={{ background: 'linear-gradient(135deg, #22d3ee, #0a6b78)', color: 'white', padding: '16px 14px', border: 'none', borderRadius: '14px', fontWeight: '700', cursor: 'pointer' }} onClick={handleCapture}>📸 CAPTURE</button>
+                    <button className="capture-btn" style={{ background: 'linear-gradient(135deg, #22d3ee, #0a6b78)', color: 'white' }} onClick={handleCapture}>📸 CAPTURE</button>
                 </div>
             ) : (
                 <div className="manual-controls" style={{ display: 'flex', gap: '20px', background: 'linear-gradient(145deg, #16203a, #0e1524)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(18, 211, 224, 0.25)' }}>

@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navigation, Menu, X, LogOut } from "lucide-react";
 import Button from "./ui/Button";
+import { useAuth } from "../context/AuthContext";
 import "../styles/TopNav.css";
 
 export default function TopNav({ onAbout }) {
     const navigate = useNavigate();
+    const { isAuthed, signOut: authSignOut } = useAuth();
     const [scrolled, setScrolled] = useState(false);
     const [open, setOpen] = useState(false);
-    const authed = !!localStorage.getItem("token");
+    const authed = isAuthed;
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 8);
@@ -20,10 +22,9 @@ export default function TopNav({ onAbout }) {
 
     const go = (path) => { setOpen(false); navigate(path); };
     const handleAbout = () => { setOpen(false); onAbout ? onAbout() : navigate("/about"); };
-    const signOut = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+    const signOut = async () => {
         setOpen(false);
+        await authSignOut();
         navigate("/home");
     };
 

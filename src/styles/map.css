@@ -395,25 +395,28 @@ box-shadow:0 0 25px rgba(18,211,224,.2);
 
 .toolbar-buttons {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
+    /* Responsive: buttons wrap to a new row instead of clipping their labels */
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
 }
 
 .toolbar-buttons button {
-    padding: 16px 14px;
+    padding: 12px 8px;
     border: none;
     border-radius: 14px;
     cursor: pointer;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 12.5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    min-width: 0;
+    transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, filter 0.18s ease-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     position: relative;
     overflow: hidden;
 }

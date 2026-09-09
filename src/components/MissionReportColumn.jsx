@@ -248,10 +248,10 @@ export default function MissionReportColumn() {
         padding: "20px",
         boxShadow: "0 0 25px rgba(18,211,224, .2)",
         border: "1px solid rgba(18,211,224, .3)",
-        height: "100%",
+        alignSelf: "start",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        gap: "14px",
         boxSizing: "border-box"
       }}>
         {/* Header */}
@@ -281,11 +281,10 @@ export default function MissionReportColumn() {
             display: "grid",
             gridTemplateColumns: "100px 1fr",
             gap: "12px",
-            background: "#16070a",
+            background: "#0a1522",
             padding: "12px",
             borderRadius: "14px",
-            border: "1px solid rgba(18,211,224,0.2)",
-            marginBottom: "14px"
+            border: "1px solid rgba(18,211,224,0.2)"
           }}>
             {/* Image Thumbnail */}
             <div style={{
@@ -334,13 +333,13 @@ export default function MissionReportColumn() {
         </div>
 
         {/* FRONT TWO ACTION BUTTONS (View Details & Direct Download) */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "8px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
           
           {/* OPTION 1: View Details Modal */}
           <button
             onClick={() => setShowModal(true)}
             style={{
-              background: "#1e090d",
+              background: "#16203a",
               color: "#ffffff",
               border: "1px solid rgba(18,211,224,0.4)",
               padding: "10px 12px",

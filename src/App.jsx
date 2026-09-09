@@ -6,6 +6,7 @@ import AnimatedBackground from "./components/AnimatedBackground";
 import LoadingAnimation from "./components/LoadingAnimation";
 import ToastHost from "./components/Toast";
 import ConfirmHost from "./components/ConfirmDialog";
+import { useAuth } from "./context/AuthContext";
 
 // Single import map: reused for both lazy() and idle prefetch so navigation is instant.
 const load = {
@@ -14,10 +15,14 @@ const load = {
   Login: () => import("./pages/Login"),
   Home: () => import("./pages/Main"),
   About: () => import("./pages/About"),
+  AuthCallback: () => import("./pages/AuthCallback"),
   Dashboard: () => import("./pages/Dashboard"),
   RoutePlanner: () => import("./pages/RoutePlanner"),
   ImageAnalysis: () => import("./pages/ImageAnalysis"),
   History: () => import("./pages/History"),
+  // NOTE: intentionally NOT in the idle-prefetch list below — three.js must never
+  // load until /model is actually opened, so the homepage stays 3D-free.
+  ModelViewer: () => import("./pages/ModelViewerPage"),
 };
 
 const Splash = lazy(load.Splash);
@@ -25,14 +30,17 @@ const Welcome = lazy(load.Welcome);
 const Login = lazy(load.Login);
 const Home = lazy(load.Home);
 const About = lazy(load.About);
+const AuthCallback = lazy(load.AuthCallback);
 const Dashboard = lazy(load.Dashboard);
 const RoutePlanner = lazy(load.RoutePlanner);
 const ImageAnalysis = lazy(load.ImageAnalysis);
 const History = lazy(load.History);
+const ModelViewerPage = lazy(load.ModelViewer);
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("token");
-  if (!isAuthenticated) {
+  const { isAuthed, loading } = useAuth();
+  if (loading) return <LoadingAnimation />;
+  if (!isAuthed) {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -50,8 +58,10 @@ function AnimatedRoutes() {
           <Route path="/home" element={<Home />} />
           <Route path="/main" element={<Navigate to="/home" replace />} />
           <Route path="/about" element={<About />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/model" element={<ModelViewerPage />} />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -72,8 +82,11 @@ function App() {
   useEffect(() => {
     const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
     const id = idle(() => {
+      // NOTE: ImageAnalysis and ModelViewer are deliberately excluded — both pull in
+      // three.js (Preview3D / RobotViewer), and we must not load 3D code from the public
+      // Home page. They load on demand when their routes are actually visited.
       load.Home(); load.Login(); load.Dashboard();
-      load.RoutePlanner(); load.ImageAnalysis(); load.History(); load.About();
+      load.RoutePlanner(); load.History(); load.About();
     });
     return () => window.cancelIdleCallback && window.cancelIdleCallback(id);
   }, []);

@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import http from "http";
 import https from "https";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import fsLib from "fs";
@@ -985,7 +984,115 @@ const handleCamSnapshot = async (req: express.Request, res: express.Response) =>
 app.post("/api/esp-snapshot", handleCamSnapshot);
 app.post("/api/rpi-snapshot", handleCamSnapshot);
 
+// ==========================================================
+// IMAGE-TO-3D PREVIEW (experimental, visualization-only)
+// TripoSR via its public Gradio Space, called with the raw /call + SSE protocol
+// (the @gradio/client stream does not keep a Node process alive for the GPU job).
+// HF_API_TOKEN is read ONLY here, server-side — never sent to the browser.
+// ==========================================================
+const TRIPOSR_SPACE = "https://stabilityai-triposr.hf.space";
+const generate3dLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 6,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: "Too many 3D generations from this IP. Please wait a few minutes." },
+});
 
+async function triposrCall(fn: string, data: any[], timeoutMs: number, signal?: AbortSignal): Promise<any[]> {
+  const HF = process.env.HF_API_TOKEN;
+  const H: Record<string, string> = HF ? { Authorization: `Bearer ${HF}` } : {};
+  const post = await fetch(`${TRIPOSR_SPACE}/call/${fn}`, {
+    method: "POST",
+    headers: { ...H, "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+    signal,
+  });
+  const posted = await post.text();
+  let eventId: string;
+  try { eventId = JSON.parse(posted).event_id; } catch { throw new Error(`3D service rejected the request (${post.status}).`); }
+
+  const ac = new AbortController();
+  const to = setTimeout(() => ac.abort(), timeoutMs);
+  if (signal) signal.addEventListener("abort", () => ac.abort(), { once: true });
+  try {
+    const sr = await fetch(`${TRIPOSR_SPACE}/call/${fn}/${eventId}`, { headers: H, signal: ac.signal });
+    const reader = (sr.body as ReadableStream<Uint8Array>).getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i: number;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        const ev = /^event: (.+)$/m.exec(chunk)?.[1];
+        const dt = /^data: ([\s\S]*)$/m.exec(chunk)?.[1];
+        if (ev === "complete") return JSON.parse(dt as string);
+        if (ev === "error") throw new Error("The 3D model service reported an error.");
+      }
+    }
+    throw new Error("The 3D generation stream ended unexpectedly.");
+  } finally {
+    clearTimeout(to);
+  }
+}
+
+app.post("/api/generate-3d", generate3dLimiter, async (req, res) => {
+  if (!process.env.HF_API_TOKEN) {
+    return res.status(503).json({ error: "3D preview is not configured on this server." });
+  }
+  const image: unknown = req.body?.image;
+  if (!image || typeof image !== "string") {
+    return res.status(400).json({ error: "No image provided." });
+  }
+  req.setTimeout(210000);
+  const clientAbort = new AbortController();
+  req.on("close", () => { if (!res.writableEnded) clientAbort.abort(); });
+
+  try {
+    let imgBuf: Buffer;
+    if (image.startsWith("data:")) {
+      imgBuf = Buffer.from(image.split(",")[1] || "", "base64");
+    } else if (/^https?:\/\//.test(image)) {
+      const r = await fetch(image, { signal: clientAbort.signal });
+      imgBuf = Buffer.from(await r.arrayBuffer());
+    } else {
+      return res.status(400).json({ error: "Unsupported image reference." });
+    }
+    if (!imgBuf.length) return res.status(400).json({ error: "The image was empty." });
+
+    const HF = process.env.HF_API_TOKEN as string;
+    const H = { Authorization: `Bearer ${HF}` };
+    const form = new FormData();
+    form.append("files", new Blob([new Uint8Array(imgBuf)]), "input.jpg");
+    const upRes = await fetch(`${TRIPOSR_SPACE}/upload`, { method: "POST", headers: H, body: form, signal: clientAbort.signal });
+    const uploaded = (await upRes.json())[0];
+    const fileData = (p: any) => ({ path: p?.path || p, meta: { _type: "gradio.FileData" } });
+
+    const pre = await triposrCall("preprocess", [fileData(uploaded), true, 0.85], 45000, clientAbort.signal);
+    const gen = await triposrCall("generate", [pre[0], 256], 160000, clientAbort.signal);
+    const glb = gen[1];
+    if (!glb?.path) throw new Error("The 3D service did not return a model.");
+
+    const glbRes = await fetch(`${TRIPOSR_SPACE}/file=${glb.path}`, { headers: H, signal: clientAbort.signal });
+    const glbBuf = Buffer.from(await glbRes.arrayBuffer());
+    if (glbBuf.subarray(0, 4).toString("ascii") !== "glTF") {
+      throw new Error("The returned file was not a valid 3D model.");
+    }
+    res.setHeader("Content-Type", "model/gltf-binary");
+    res.setHeader("Content-Disposition", 'inline; filename="preview.glb"');
+    res.setHeader("X-Model", "TripoSR");
+    return res.send(glbBuf);
+  } catch (e) {
+    const err = e as Error;
+    const msg = err?.name === "AbortError" ? "3D generation was cancelled or timed out." : (err?.message || "3D generation failed.");
+    logger.error("generate-3d failed", { msg });
+    if (!res.headersSent && !res.writableEnded) return res.status(502).json({ error: msg });
+  }
+});
 
 // Gemini AI Image Analysis API
 app.post("/api/analyze-image", async (req, res) => {
@@ -1466,6 +1573,7 @@ app.use((err, req, res, next) => {
 async function startServer() {
   app.use(express.static(path.join(process.cwd(), "public")));
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1484,4 +1592,10 @@ async function startServer() {
   });
 }
 
-startServer();
+// On Vercel the app runs as a serverless function (see api/index.ts) — export it and skip listen().
+// Locally (tsx dev / node dist/server.cjs) we start a real HTTP server + Vite/static middleware.
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;

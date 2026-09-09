@@ -66,6 +66,10 @@ export const MissionProvider = ({ children }) => {
 
     const [locationSource, setLocationSource] = useState("BROWSER_GPS"); // "BROWSER_GPS" | "IP_GEOLOCATION" | "MANUAL_OVERRIDE"
     const [gpsStatusMessage, setGpsStatusMessage] = useState("Initializing System Location Tracking...");
+    // Read the current source inside geolocation callbacks WITHOUT re-subscribing
+    // the watcher (that re-subscribe loop was re-prompting for permission).
+    const locationSourceRef = useRef(locationSource);
+    locationSourceRef.current = locationSource;
 
     // Helper to manually set bot (and optionally home) position anywhere
     const setBotLocation = (lat, lng, syncHome = true, source = "MANUAL_OVERRIDE") => {
@@ -113,124 +117,68 @@ export const MissionProvider = ({ children }) => {
     };
 
     // =====================================================
-    // REAL-TIME SYSTEM LOCATION TRACKING WITH 1-SEC REFRESH
+    // REAL-TIME SYSTEM LOCATION TRACKING
+    // Runs ONCE. watchPosition asks for permission a single time and then streams
+    // updates; the old code called getCurrentPosition every second AND re-ran on
+    // every locationSource change, which re-prompted repeatedly on mobile+desktop.
     // =====================================================
     useEffect(() => {
         let active = true;
 
-        // Fast IP Geolocation fallback for instant real location on launch
+        // Fast IP geolocation fallback (one-time) for an instant approximate location.
         fetch("https://ipapi.co/json/")
             .then(res => res.json())
             .then(data => {
                 if (!active) return;
                 if (data && typeof data.latitude === "number" && typeof data.longitude === "number") {
-                    setRobot(prev => {
-                        // Only set if we haven't locked browser GPS or manual override
-                        if (locationSource === "BROWSER_GPS" && prev.latitude !== 12.9082) return prev;
-                        return { ...prev, latitude: data.latitude, longitude: data.longitude };
-                    });
-                    setHomePosition(prev => {
-                        if (locationSource === "BROWSER_GPS" && prev.lat !== 12.9082) return prev;
-                        return { lat: data.latitude, lng: data.longitude };
-                    });
-                    if (locationSource !== "MANUAL_OVERRIDE" && locationSource !== "BROWSER_GPS") {
+                    const src = locationSourceRef.current;
+                    setRobot(prev => (src === "BROWSER_GPS" && prev.latitude !== 12.9082) ? prev : { ...prev, latitude: data.latitude, longitude: data.longitude });
+                    setHomePosition(prev => (src === "BROWSER_GPS" && prev.lat !== 12.9082) ? prev : { lat: data.latitude, lng: data.longitude });
+                    if (src !== "MANUAL_OVERRIDE" && src !== "BROWSER_GPS") {
                         setLocationSource("IP_GEOLOCATION");
                         setGpsStatusMessage(`🌐 Network Location Active: ${data.city || 'Local'}, ${data.region_code || ''} (${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)})`);
                     }
                 }
             })
-            .catch(() => {
-                // Ignore IP lookup failure
-            });
+            .catch(() => { /* ignore IP lookup failure */ });
 
-        // Main high-accuracy system GPS fetch function
-        const fetchSystemGps = () => {
-            if (!navigator.geolocation) {
-                if (active) setGpsStatusMessage("Browser Geolocation API not supported.");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    if (!active) return;
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-
-                    setRobot(prev => {
-                        if (locationSource === "MANUAL_OVERRIDE") return prev;
-                        if (prev.status === "RUNNING" || prev.status === "RETURNING") return prev;
-                        return {
-                            ...prev,
-                            latitude: lat,
-                            longitude: lng
-                        };
-                    });
-
-                    setHomePosition(prev => {
-                        if (locationSource === "MANUAL_OVERRIDE") return prev;
-                        return { lat, lng };
-                    });
-
-                    if (locationSource !== "MANUAL_OVERRIDE") {
-                        setLocationSource("BROWSER_GPS");
-                        setGpsStatusMessage(`📡 Live System Location Active (${lat.toFixed(5)}, ${lng.toFixed(5)}) - 1s Refresh`);
-                    }
-
-                    // Sync to backend server
-                    api.updateGpsPosition({ latitude: lat, longitude: lng }).catch(() => {});
-                },
-                (err) => {
-                    if (!active) return;
-                    console.warn("System GPS refresh warning:", err.message);
-                },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 }
-            );
-        };
-
-        // 1) Trigger immediate check when software opens
-        fetchSystemGps();
-
-        // 2) Set 1-second continuous refresh interval as requested
-        const intervalId = setInterval(fetchSystemGps, 1000);
-
-        // 3) Also subscribe to watchPosition for real-time OS location updates
-        let watchId = null;
-        if (navigator.geolocation) {
-            watchId = navigator.geolocation.watchPosition(
-                (pos) => {
-                    if (!active) return;
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-
-                    setRobot(prev => {
-                        if (locationSource === "MANUAL_OVERRIDE") return prev;
-                        if (prev.status === "RUNNING" || prev.status === "RETURNING") return prev;
-                        return { ...prev, latitude: lat, longitude: lng };
-                    });
-
-                    setHomePosition(prev => {
-                        if (locationSource === "MANUAL_OVERRIDE") return prev;
-                        return { lat, lng };
-                    });
-
-                    if (locationSource !== "MANUAL_OVERRIDE") {
-                        setLocationSource("BROWSER_GPS");
-                        setGpsStatusMessage(`📡 Live System Location Active (${lat.toFixed(5)}, ${lng.toFixed(5)}) - 1s Refresh`);
-                    }
-                },
-                () => {},
-                { enableHighAccuracy: true, maximumAge: 0 }
-            );
+        if (!navigator.geolocation) {
+            setGpsStatusMessage("Browser Geolocation API not supported.");
+            return () => { active = false; };
         }
+
+        // Single permission request; streams position updates thereafter.
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                if (!active) return;
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const src = locationSourceRef.current;
+                setRobot(prev => {
+                    if (src === "MANUAL_OVERRIDE") return prev;
+                    if (prev.status === "RUNNING" || prev.status === "RETURNING") return prev;
+                    return { ...prev, latitude: lat, longitude: lng };
+                });
+                setHomePosition(prev => (src === "MANUAL_OVERRIDE") ? prev : { lat, lng });
+                if (src !== "MANUAL_OVERRIDE") {
+                    setLocationSource("BROWSER_GPS");
+                    setGpsStatusMessage(`📡 Live System Location Active (${lat.toFixed(5)}, ${lng.toFixed(5)})`);
+                }
+                api.updateGpsPosition({ latitude: lat, longitude: lng }).catch(() => {});
+            },
+            (err) => {
+                if (!active) return;
+                console.warn("System GPS warning:", err.message);
+                if (err.code === 1) setGpsStatusMessage("Location permission denied — using network location.");
+            },
+            { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+        );
 
         return () => {
             active = false;
-            clearInterval(intervalId);
-            if (watchId !== null && navigator.geolocation) {
-                navigator.geolocation.clearWatch(watchId);
-            }
+            navigator.geolocation.clearWatch(watchId);
         };
-    }, [locationSource]);
+    }, []);
 
     // =====================================================
     // MISSION

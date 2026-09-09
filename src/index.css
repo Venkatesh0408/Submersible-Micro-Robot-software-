@@ -92,16 +92,6 @@ body{
     width:100%;
 }
 
-#username-input {
-    padding-left: 3.25rem !important;
-    padding-right: 1rem !important;
-}
-
-#password-input {
-    padding-left: 3.25rem !important;
-    padding-right: 3.25rem !important;
-}
-
 @keyframes levitate {
     0%, 100% {
         transform: translateY(0px);

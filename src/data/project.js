@@ -1,7 +1,6 @@
 // Single source of truth for project identity, team, guide and institution.
 export const PROJECT = {
     name: "Autonomous Submersible Micro Robot",
-    wordmark: "VSTY",
     tagline: "AI-Powered Underwater Inspection System",
     description:
         "An autonomous submersible micro-robot for underwater inspection and water-quality monitoring — combining live sensor telemetry, GPS route planning and on-board AI defect detection.",

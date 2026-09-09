@@ -92,16 +92,15 @@
 }
 .home-title {
     font-family: var(--font-display);
-    font-size: clamp(30px, 6vw, 62px);
+    font-size: clamp(30px, 6vw, 60px);
     font-weight: 900;
-    line-height: 1.02;
+    line-height: 1.06;
     letter-spacing: -0.02em;
-    max-width: 16ch;
-    background: linear-gradient(180deg, #ffffff 0%, #bdeefb 50%, var(--primary) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 30px rgba(18, 211, 224, 0.28));
+    max-width: 20ch;
+    /* Solid, high-contrast fill — reliably visible on every browser/device
+       (background-clip:text was rendering transparent/invisible on mobile). */
+    color: #eaf6ff;
+    text-shadow: 0 0 26px rgba(34, 211, 238, 0.4), 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 .home-tagline { color: var(--primary-strong); font-weight: 700; font-size: clamp(13px, 1.6vw, 16px); letter-spacing: 0.16em; text-transform: uppercase; }
 .home-desc { color: var(--text-dim); font-size: 15px; line-height: 1.65; max-width: 62ch; }

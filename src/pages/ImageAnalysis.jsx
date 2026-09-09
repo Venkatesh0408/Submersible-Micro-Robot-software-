@@ -7,6 +7,7 @@ import Gallery from "../components/Gallery";
 import Header from "../components/Header";
 import DetectionPanel from "../components/DetectionPanel";
 import MissionReportColumn from "../components/MissionReportColumn";
+import Preview3D from "../components/Preview3D";
 import "../styles/ImageAnalysis.css";
 
 export default function ImageAnalysis() {
@@ -17,6 +18,7 @@ export default function ImageAnalysis() {
     const [imageSource, setImageSource] = useState("https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisData, setAnalysisData] = useState(null);
+    const [show3d, setShow3d] = useState(false);
     
     // Default stats before analysis
     const defaultStats = {
@@ -199,7 +201,15 @@ return (
                     <button className="start-mission" style={{width: 'auto', padding: '10px 20px', background: 'linear-gradient(135deg, #22d3ee, #0a6b78)'}} onClick={() => navigate("/history")}>
                         🕒 View History
                     </button>
-                    <input 
+                    {/* Secondary/ghost — optional experimental visualization, clearly separated from detection results */}
+                    <button
+                        onClick={() => setShow3d(true)}
+                        style={{ width: 'auto', padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        🧊 Generate 3D Preview
+                        <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)', background: 'rgba(255,183,3,0.12)', border: '1px solid rgba(255,183,3,0.35)', padding: '2px 6px', borderRadius: '999px' }}>Experimental</span>
+                    </button>
+                    <input
                        type="file" 
                        ref={fileInputRef} 
                        style={{display: 'none'}} 
@@ -300,6 +310,9 @@ return (
             <div style={{ marginTop: '30px' }}>
                 <MissionReportColumn />
             </div>
+
+            {/* Optional experimental 3D preview (separate from detection results) */}
+            <Preview3D open={show3d} image={imageSource} onClose={() => setShow3d(false)} />
         </div>
     );
 }

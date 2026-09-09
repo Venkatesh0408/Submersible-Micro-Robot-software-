@@ -4377,11 +4377,15 @@ margin-top:20px;
 
 display:grid;
 
-grid-template-columns:repeat(4,1fr);
+/* auto-fit collapses empty tracks so the last row's cards stretch to fill the
+   width — no lone card leaving an empty half-row */
+grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
 
-gap:20px;
+gap:16px;
 
 margin-top:20px;
+
+align-items:stretch;
 
 }
 
@@ -4401,7 +4405,7 @@ grid-template-columns:1fr;
 
 .sensor-section{
 
-grid-template-columns:repeat(2,1fr);
+grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
 
 }
 

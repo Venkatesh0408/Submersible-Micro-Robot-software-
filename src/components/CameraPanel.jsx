@@ -3,7 +3,7 @@ import { useMission } from "../context/MissionContext";
 import {
   Wifi, WifiOff, Camera, Upload, Film, Play, Pause, RefreshCw,
   Sparkles, Video, CheckCircle, ShieldAlert, Settings, HelpCircle,
-  Copy, Check, Loader2, Radio, Cpu
+  Copy, Check, Loader2, Radio, Cpu, X
 } from "lucide-react";
 import { fetchMedia, uploadMedia, pingEspCam, captureEspSnapshot } from "../services/api";
 import "../styles/Camera.css";
@@ -43,6 +43,10 @@ export default function CameraPanel() {
   const [showEspSetupGuide, setShowEspSetupGuide] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [capturingSnapshot, setCapturingSnapshot] = useState(false);
+  const [espNoticeDismissed, setEspNoticeDismissed] = useState(false);
+
+  // Re-show the offline notice whenever the connection state flips.
+  useEffect(() => { setEspNoticeDismissed(false); }, [espConnected]);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -132,7 +136,7 @@ export default function CameraPanel() {
     }
   };
 
-  // Canvas Fallback Renderer for Simulated VSTY Underwater View when ESP is offline
+  // Canvas Fallback Renderer for Simulated Underwater View when ESP is offline
   useEffect(() => {
     if (espConnected || activeSource !== "esp-wifi") return;
 
@@ -198,21 +202,20 @@ export default function CameraPanel() {
       ctx.shadowBlur = 20;
       ctx.fill();
 
-      // VSTY Text Logo
-      ctx.font = "900 36px 'Arial Black', sans-serif";
+      // Product text logo
+      ctx.font = "900 32px 'Orbitron', 'Arial Black', sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "center";
       ctx.shadowColor = "#22d3ee";
       ctx.shadowBlur = 15;
-      ctx.fillText("VSTY SUBMERSIBLE", 0, 75);
+      ctx.fillText("SUBMERSIBLE", 0, 75);
 
       ctx.restore();
 
-      // HUD Overlay details
+      // HUD Overlay details (status is shown by the React banner, not duplicated here)
       ctx.fillStyle = "#22d3ee";
       ctx.font = "bold 12px monospace";
-      ctx.fillText("● AUTOMATIC VSTY STREAM FEED", 20, 30);
-      ctx.fillText(`FPS: 60 | ESP32-CAM NOT CONNECTED 🔴`, canvas.width - 320, 30);
+      ctx.fillText("● AUTOMATIC STREAM FEED", 20, 30);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -398,7 +401,7 @@ void loop() { delay(1000); }`;
           </div>
         ) : (
           <div style={{ width: "100%", height: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", background: "#050103" }}>
-            {/* Automatic VSTY Canvas Video Stream when ESP is not connected */}
+            {/* Automatic canvas video stream when ESP is not connected */}
             <canvas
               ref={canvasRef}
               width={1280}
@@ -440,25 +443,26 @@ void loop() { delay(1000); }`;
           </span>
         </div>
 
-        {/* ESP32-CAM Not Connected Notification Banner */}
-        {!espConnected && (
+        {/* ESP32-CAM Not Connected Notification Banner (dismissible) */}
+        {!espConnected && !espNoticeDismissed && (
           <div style={{
             position: "absolute",
             top: "12px",
             right: "12px",
+            maxWidth: "calc(100% - 24px)",
             background: "rgba(13,26,40, 0.92)",
             border: "1px solid #22d3ee",
             borderRadius: "8px",
-            padding: "8px 14px",
+            padding: "8px 10px 8px 14px",
             display: "flex",
             alignItems: "center",
             gap: "10px",
             backdropFilter: "blur(6px)",
             boxShadow: "0 0 15px rgba(18,211,224, 0.4)",
-            zIndex: 10
+            zIndex: 12
           }}>
-            <WifiOff size={16} style={{ color: "#22d3ee" }} className="animate-pulse" />
-            <div>
+            <WifiOff size={16} style={{ color: "#22d3ee", flexShrink: 0 }} className="animate-pulse" />
+            <div style={{ minWidth: 0 }}>
               <div style={{ color: "#ffffff", fontSize: "12px", fontWeight: "bold" }}>
                 ESP32-CAM NOT CONNECTED
               </div>
@@ -466,6 +470,14 @@ void loop() { delay(1000); }`;
                 Main MCU: Arduino Nano Active | Video feed standby
               </div>
             </div>
+            <button
+              onClick={() => setEspNoticeDismissed(true)}
+              aria-label="Dismiss"
+              title="Dismiss"
+              style={{ background: "transparent", color: "#8296a8", padding: 2, flexShrink: 0, display: "grid", placeItems: "center", cursor: "pointer" }}
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
       </div>

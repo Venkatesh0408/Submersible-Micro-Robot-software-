@@ -500,7 +500,7 @@ export default function InteractiveMap(){
 
                     <h3>
 
-                        🤿 VSTY Robot
+                        🤿 Submersible Robot
 
                     </h3>
 
