@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMission } from "../context/MissionContext";
 import { toast } from "./Toast";
+import { confirmDialog } from "./ConfirmDialog";
 import { captureImage } from "../services/api";
 
 export default function MissionToolbar() {
@@ -25,14 +26,35 @@ export default function MissionToolbar() {
         emergencyStop,
         returnHome,
         manualMove,
-        setHome
+        setHome,
+        saveMissionToHistory
     } = useMission();
 
     function startHandler() { startMission(); }
     function pauseHandler() { missionPaused ? resumeMission() : pauseMission(); }
     function stopHandler() { stopMission(); }
-    function homeHandler() { returnHome(); }
-    function saveHandler() { saveRoute(); }
+    async function homeHandler() {
+        if (missionStarted) {
+            const confirm1 = await confirmDialog({ title: "Return Home?", message: "Are you sure you want to return to the home position?", confirmText: "Yes, Return" });
+            if (!confirm1) return;
+            
+            const confirm2 = await confirmDialog({ title: "Save Mission?", message: "Would you like to save your current progress to Mission History so you can resume it later?", confirmText: "Save & Return", cancelText: "Just Return" });
+            if (confirm2) {
+                saveMissionToHistory("uncompleted");
+                toast.success("Mission saved as uncompleted.");
+            }
+        }
+        returnHome();
+    }
+    function saveHandler() {
+        if (missionStarted || missionPaused) {
+            saveMissionToHistory("uncompleted");
+            toast.success("Mission progress saved to History.");
+        } else {
+            saveRoute();
+            toast.success("Route ready for mission start.");
+        }
+    }
 
     async function handleCapture() {
         toast.success("Image captured", { title: "Camera" });

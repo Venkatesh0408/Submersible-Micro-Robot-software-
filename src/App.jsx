@@ -20,6 +20,7 @@ const load = {
   RoutePlanner: () => import("./pages/RoutePlanner"),
   ImageAnalysis: () => import("./pages/ImageAnalysis"),
   History: () => import("./pages/History"),
+  MissionHistory: () => import("./pages/MissionHistory"),
   // NOTE: intentionally NOT in the idle-prefetch list below — three.js must never
   // load until /model is actually opened, so the homepage stays 3D-free.
   ModelViewer: () => import("./pages/ModelViewerPage"),
@@ -35,6 +36,7 @@ const Dashboard = lazy(load.Dashboard);
 const RoutePlanner = lazy(load.RoutePlanner);
 const ImageAnalysis = lazy(load.ImageAnalysis);
 const History = lazy(load.History);
+const MissionHistory = lazy(load.MissionHistory);
 const ModelViewerPage = lazy(load.ModelViewer);
 
 const ProtectedRoute = ({ children }) => {
@@ -68,6 +70,7 @@ function AnimatedRoutes() {
           <Route path="/route-planner" element={<ProtectedRoute><RoutePlanner /></ProtectedRoute>} />
           <Route path="/image-analysis" element={<ProtectedRoute><ImageAnalysis /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/mission-history" element={<ProtectedRoute><MissionHistory /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

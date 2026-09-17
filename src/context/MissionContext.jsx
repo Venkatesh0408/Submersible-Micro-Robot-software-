@@ -365,12 +365,11 @@ export const MissionProvider = ({ children }) => {
         setMissionPaused(false);
         setMissionCompleted(false);
         setReturningHome(false);
-        setCurrentWaypoint(0);
-        setProgress(0);
+        // Do not reset currentWaypoint and progress here so loaded missions can resume
         setRobot(prev => ({
             ...prev,
-            latitude: homePosition.lat,
-            longitude: homePosition.lng,
+            latitude: currentWaypoint === 0 ? homePosition.lat : prev.latitude,
+            longitude: currentWaypoint === 0 ? homePosition.lng : prev.longitude,
             status: "RUNNING"
         }));
     };
@@ -468,6 +467,13 @@ export const MissionProvider = ({ children }) => {
             status: "RETURNING"
         }));
     };
+
+    
+    useEffect(() => {
+        if (missionCompleted) {
+            markMissionCompletedInHistory();
+        }
+    }, [missionCompleted]);
 
     // =====================================================
     // DISTANCE & TIME
@@ -697,7 +703,50 @@ export const MissionProvider = ({ children }) => {
     // CONTEXT VALUE
     // =====================================================
 
-        const value = {
+        
+    const saveMissionToHistory = (status = "uncompleted") => {
+        const history = JSON.parse(localStorage.getItem("missionHistory") || "[]");
+        history.push({
+            id: Date.now(),
+            date: new Date().toISOString(),
+            name: missionName || ("Mission " + new Date().toLocaleString()),
+            area: inspectionArea || "Unknown Area",
+            status: status,
+            waypoints: waypoints,
+            currentWaypoint: currentWaypoint,
+            robotPosition: { lat: robot.latitude, lng: robot.longitude },
+            missionTime: missionTime,
+            distance: distance,
+            progress: progress
+        });
+        localStorage.setItem("missionHistory", JSON.stringify(history));
+    };
+
+    const loadMissionFromHistory = (mission) => {
+        setMissionName(mission.name);
+        setInspectionArea(mission.area);
+        setWaypoints(mission.waypoints);
+        setCurrentWaypoint(mission.currentWaypoint);
+        setRobot(prev => ({ ...prev, latitude: mission.robotPosition.lat, longitude: mission.robotPosition.lng, status: "READY" }));
+        setMissionTime(mission.missionTime);
+        setDistance(mission.distance);
+        setProgress(mission.progress);
+        setMissionStarted(false);
+        setMissionPaused(false);
+        setMissionCompleted(false);
+        setReturningHome(false);
+        setRouteSaved(true);
+        setMissionStatus("READY");
+    };
+
+    const markMissionCompletedInHistory = () => {
+        saveMissionToHistory("completed");
+    };
+
+    const value = {
+        saveMissionToHistory,
+        loadMissionFromHistory,
+        markMissionCompletedInHistory,
         missionName,
         setMissionName,
         inspectionArea,

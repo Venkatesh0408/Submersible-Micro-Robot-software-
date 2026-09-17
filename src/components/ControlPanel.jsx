@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "./Toast";
+import { confirmDialog } from "./ConfirmDialog";
 
 import { useMission } from "../context/MissionContext";
 
@@ -19,72 +20,45 @@ export default function ControlPanel() {
 
     const [mode, setMode] = useState("manual");
 
-    const [running, setRunning] = useState(false);
-
-    const [paused, setPaused] = useState(false);
-
-    const [missionState, setMissionState] = useState("READY");
+    
 
     const {
-
-        setMissionStatus,
-
+        missionStarted,
+        missionPaused,
+        currentWaypoint,
+        setCurrentWaypoint,
         setProgress,
-
-        setCurrentWaypoint
-
+        setMissionStatus,
+        saveMissionToHistory,
+        missionStatus: missionState,
+        startMission: contextStartMission,
+        stopMission: contextStopMission,
+        pauseMission: contextPauseMission,
+        resumeMission: contextResumeMission,
+        returnHome: contextReturnHome
     } = useMission();
+    
+    const running = missionStarted;
+    const paused = missionPaused;
 
     // ===========================================
     // START / STOP
     // ===========================================
 
     async function handleStartStop() {
-
         try {
-
             if (!running) {
-
-                await startMission();
-
-                setRunning(true);
-
-                setPaused(false);
-
-                setMissionState("MISSION RUNNING");
-
-                setMissionStatus("RUNNING");
-
-                setProgress(0);
-
-                setCurrentWaypoint(0);
-
+                contextStartMission();
+                startMission().catch(console.error);
+                // Context handles the rest!
+            } else {
+                contextStopMission();
+                stopMission().catch(console.error);
+                // Context handles the rest!
             }
-
-            else {
-
-                await stopMission();
-
-                setRunning(false);
-
-                setPaused(false);
-
-                setMissionState("MISSION STOPPED");
-
-                setMissionStatus("STOPPED");
-
-                setProgress(100);
-
-            }
-
-        }
-
-        catch (err) {
-
+        } catch (err) {
             console.log(err);
-
         }
-
     }
 
     // ===========================================
@@ -92,43 +66,20 @@ export default function ControlPanel() {
     // ===========================================
 
     async function handlePauseResume() {
-
-        if (!running) return;
-
+        if (!running && currentWaypoint === 0) return; // Allow resuming if loaded from history
         try {
-
             if (!paused) {
-
-                await pauseMission();
-
-                setPaused(true);
-
-                setMissionState("MISSION PAUSED");
-
-                setMissionStatus("PAUSED");
-
+                contextPauseMission();
+                pauseMission().catch(console.error);
+                // Context handles the rest
+            } else {
+                contextResumeMission();
+                resumeMission().catch(console.error);
+                // Context handles the rest
             }
-
-            else {
-
-                await resumeMission();
-
-                setPaused(false);
-
-                setMissionState("MISSION RUNNING");
-
-                setMissionStatus("RUNNING");
-
-            }
-
-        }
-
-        catch (err) {
-
+        } catch (err) {
             console.log(err);
-
         }
-
     }
 
     // ===========================================
@@ -136,23 +87,26 @@ export default function ControlPanel() {
     // ===========================================
 
     async function handleReturn() {
-
+        if (missionStarted) {
+            const confirm1 = await confirmDialog({ title: "Return Home?", message: "Are you sure you want to return to the home position?", confirmText: "Yes, Return" });
+            if (!confirm1) return;
+            
+            const confirm2 = await confirmDialog({ title: "Save Mission?", message: "Would you like to save your current progress to Mission History so you can resume it later?", confirmText: "Save & Return", cancelText: "Just Return" });
+            if (confirm2) {
+                saveMissionToHistory("uncompleted");
+                toast.success("Mission saved as uncompleted.");
+            }
+        }
+        
         try {
-
-            await returnHome();
-
+            contextReturnHome();
+            returnHome().catch(console.error);
             setMissionState("RETURNING HOME");
-
             setMissionStatus("RETURNING HOME");
-
         }
-
         catch (err) {
-
             console.log(err);
-
         }
-
     }
 
     // ===========================================
